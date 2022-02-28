@@ -1,18 +1,30 @@
 const { expect } = require("chai");
 
-describe("Greeter", function () {
-  it("Should return the new greeting once it's changed", async function () {
-    const Greeter = await ethers.getContractFactory("Greeter");
-    const greeter = await Greeter.deploy("Hello, world!");
-    await greeter.deployed();
+describe("Create2", function () {
+  it("Should return the address of the smart contract Create2", async function () {
+    
+    const [deployer, creator] = await ethers.getSigners();
+    
+    const Create2 = await ethers.getContractFactory("Create2Factory");
 
-    expect(await greeter.greet()).to.equal("Hello, world!");
+    this.create2 = await Create2.deploy();
 
-    const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
+    // filter = {
+    //   address: this.create2.address,
+    //   topics: [ethers.utils.id("Deploy(address)")]
+    // }
 
-    // wait until the transaction is mined
-    await setGreetingTx.wait();
+    let tx = await this.create2.deploy(creator.address);
+    let receipt = await tx.wait();
 
-    expect(await greeter.greet()).to.equal("Hola, mundo!");
+    let event = receipt.events?.filter((x) => {
+      return x.event == "Deploy"
+    })
+
+    console.log(event[0].data)
+
+    // ethers.provider.on(filter, (log, event) => {
+    //   console.log(log)
+    // })
   });
 });
