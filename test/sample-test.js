@@ -9,22 +9,18 @@ describe("Create2", function () {
 
     this.create2 = await Create2.deploy();
 
-    // filter = {
-    //   address: this.create2.address,
-    //   topics: [ethers.utils.id("Deploy(address)")]
-    // }
-
-    let tx = await this.create2.deploy(creator.address);
+    let tx = await this.create2.connect(creator).deploy(123);
     let receipt = await tx.wait();
 
     let event = receipt.events?.filter((x) => {
       return x.event == "Deploy"
     })
 
-    console.log(event[0].data)
+    const address_event = event[0].args[0];
 
-    // ethers.provider.on(filter, (log, event) => {
-    //   console.log(log)
-    // })
+    const bytecode = await this.create2.get_bytecode(creator.address);
+    const address_calc = await this.create2.get_address(bytecode, 123);
+    
+    expect(address_calc).to.equal(address_event);
   });
 });
